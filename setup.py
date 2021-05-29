@@ -57,8 +57,8 @@ setup(
     extras_require={"tests": ["pytest>=3.2.1,!=3.3.0"], "typecheck": ["mypy"]},
     tests_require=["pytest>=3.2.1,!=3.3.0"],
     package_dir={"": "src"},
-    packages=["bcrypt"],
-    package_data={"bcrypt": ["py.typed"]},
+    packages=["x00"],
+    package_data={"x00": ["py.typed"]},
     zip_safe=False,
     classifiers=[
         "Development Status :: 5 - Production/Stable",
