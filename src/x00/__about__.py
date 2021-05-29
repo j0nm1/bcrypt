@@ -28,7 +28,7 @@ __all__ = [
     "__copyright__",
 ]
 
-__title__ = "bcrypt"
+__title__ = "x00"
 __summary__ = "Modern password hashing for your software and your servers"
 __uri__ = "https://github.com/pyca/bcrypt/"
 
