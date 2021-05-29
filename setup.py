@@ -17,7 +17,7 @@ CFFI_MODULES = [
 
 # Manually extract the __about__
 __about__ = {}
-with open("src/bcrypt/__about__.py") as fp:
+with open("src/x00/__about__.py") as fp:
     exec(fp.read(), __about__)
 
 
