@@ -20,14 +20,14 @@ CFFI_MODULES = [
 
 # Manually extract the __about__
 __about__ = {}
-with open("src/bcrypt00/__about__.py") as fp:
+with open("src/nullbcrypt/__about__.py") as fp:
     exec(fp.read(), __about__)
 
 
 if platform.python_implementation() == "PyPy":
     if sys.pypy_version_info < (2, 6):
         raise RuntimeError(
-            "bcrypt00 is not compatible with PyPy < 2.6. Please upgrade PyPy to "
+            "nullbcrypt is not compatible with PyPy < 2.6. Please upgrade PyPy to "
             "use this library."
         )
 
@@ -215,7 +215,7 @@ setup(
 
     package_dir={"": "src"},
     packages=[
-        "bcrypt00",
+        "nullbcrypt",
     ],
 
     zip_safe=False,
@@ -233,7 +233,7 @@ setup(
         "Programming Language :: Python :: 3.6",
     ],
 
-    ext_package="bcrypt00",
+    ext_package="nullbcrypt",
 
     **keywords_with_side_effects(sys.argv)
 )
