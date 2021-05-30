@@ -22,12 +22,6 @@ typedef uint8_t u_int8_t;
 typedef uint16_t u_int16_t;
 typedef uint32_t u_int32_t;
 typedef uint64_t u_int64_t;
-#elif defined(__MVS__)
-#include <stdint.h>
-typedef uint8_t u_int8_t;
-typedef uint16_t u_int16_t;
-typedef uint32_t u_int32_t;
-typedef uint64_t u_int64_t;
 #else
 #include <stdint.h>
 #endif
@@ -35,7 +29,7 @@ typedef uint64_t u_int64_t;
 #define explicit_bzero(s,n) memset(s, 0, n)
 #define DEF_WEAK(f)
 
-int bcrypt_hashpass(const char *key, const char *salt, char *encrypted, size_t encryptedlen);
+int bcrypt_hashpass(const char *key, size_t key_len, const char *salt, char *encrypted, size_t encryptedlen);
 int encode_base64(char *, const u_int8_t *, size_t);
 int timingsafe_bcmp(const void *b1, const void *b2, size_t n);
 int bcrypt_pbkdf(const char *pass, size_t passlen, const uint8_t *salt, size_t saltlen, uint8_t *key, size_t keylen, unsigned int rounds);

@@ -20,39 +20,27 @@ import os
 import re
 import warnings
 
-from . import _bcrypt  # type: ignore
+import six
+
+from bcrypt import _bcrypt
+
 from .__about__ import (
-    __author__,
-    __copyright__,
-    __email__,
-    __license__,
-    __summary__,
-    __title__,
-    __uri__,
-    __version__,
+    __author__, __copyright__, __email__, __license__, __summary__, __title__,
+    __uri__, __version__,
 )
 
 
 __all__ = [
-    "__title__",
-    "__summary__",
-    "__uri__",
-    "__version__",
-    "__author__",
-    "__email__",
-    "__license__",
-    "__copyright__",
-    "gensalt",
-    "hashpw",
-    "kdf",
-    "checkpw",
+    "__title__", "__summary__", "__uri__", "__version__", "__author__",
+    "__email__", "__license__", "__copyright__",
+    "gensalt", "hashpw", "kdf", "checkpw",
 ]
 
 
 _normalize_re = re.compile(br"^\$2y\$")
 
 
-def gensalt(rounds: int = 12, prefix: bytes = b"2b") -> bytes:
+def gensalt(rounds=12, prefix=b"2b"):
     if prefix not in (b"2a", b"2b"):
         raise ValueError("Supported prefixes are b'2a' or b'2b'")
 
@@ -64,21 +52,14 @@ def gensalt(rounds: int = 12, prefix: bytes = b"2b") -> bytes:
     _bcrypt.lib.encode_base64(output, salt, len(salt))
 
     return (
-        b"$"
-        + prefix
-        + b"$"
-        + ("%2.2u" % rounds).encode("ascii")
-        + b"$"
-        + _bcrypt.ffi.string(output)
+        b"$" + prefix + b"$" + ("%2.2u" % rounds).encode("ascii") + b"$" +
+        _bcrypt.ffi.string(output)
     )
 
 
-def hashpw(password: bytes, salt: bytes) -> bytes:
-    if isinstance(password, str) or isinstance(salt, str):
-        raise TypeError("Strings must be encoded before hashing")
-
-    #if b"\x00" in password:
-    #    raise ValueError("password may not contain NUL bytes")
+def hashpw(password, salt):
+    if isinstance(password, six.text_type) or isinstance(salt, six.text_type):
+        raise TypeError("Unicode-objects must be encoded before hashing")
 
     # bcrypt originally suffered from a wraparound bug:
     # http://www.openwall.com/lists/oss-security/2012/01/02/4
@@ -97,7 +78,8 @@ def hashpw(password: bytes, salt: bytes) -> bytes:
     original_salt, salt = salt, _normalize_re.sub(b"$2b$", salt)
 
     hashed = _bcrypt.ffi.new("char[]", 128)
-    retval = _bcrypt.lib.bcrypt_hashpass(password, salt, hashed, len(hashed))
+    retval = _bcrypt.lib.bcrypt_hashpass(password, len(password), salt,
+                                         hashed, len(hashed))
 
     if retval != 0:
         raise ValueError("Invalid salt")
@@ -111,14 +93,10 @@ def hashpw(password: bytes, salt: bytes) -> bytes:
     return original_salt[:4] + _bcrypt.ffi.string(hashed)[4:]
 
 
-def checkpw(password: bytes, hashed_password: bytes) -> bool:
-    if isinstance(password, str) or isinstance(hashed_password, str):
-        raise TypeError("Strings must be encoded before checking")
-
-    #if b"\x00" in password or b"\x00" in hashed_password:
-    #    raise ValueError(
-    #        "password and hashed_password may not contain NUL bytes"
-    #    )
+def checkpw(password, hashed_password):
+    if (isinstance(password, six.text_type) or
+            isinstance(hashed_password, six.text_type)):
+        raise TypeError("Unicode-objects must be encoded before checking")
 
     ret = hashpw(password, hashed_password)
 
@@ -128,15 +106,9 @@ def checkpw(password: bytes, hashed_password: bytes) -> bool:
     return _bcrypt.lib.timingsafe_bcmp(ret, hashed_password, len(ret)) == 0
 
 
-def kdf(
-    password: bytes,
-    salt: bytes,
-    desired_key_bytes: int,
-    rounds: int,
-    ignore_few_rounds: bool = False,
-) -> bytes:
-    if isinstance(password, str) or isinstance(salt, str):
-        raise TypeError("Strings must be encoded before hashing")
+def kdf(password, salt, desired_key_bytes, rounds, ignore_few_rounds=False):
+    if isinstance(password, six.text_type) or isinstance(salt, six.text_type):
+        raise TypeError("Unicode-objects must be encoded before hashing")
 
     if len(password) == 0 or len(salt) == 0:
         raise ValueError("password and salt must not be empty")
@@ -151,14 +123,11 @@ def kdf(
         # They probably think bcrypt.kdf()'s rounds parameter is logarithmic,
         # expecting this value to be slow enough (it probably would be if this
         # were bcrypt). Emit a warning.
-        warnings.warn(
-            (
-                "Warning: bcrypt.kdf() called with only {0} round(s). "
-                "This few is not secure: the parameter is linear, like PBKDF2."
-            ).format(rounds),
-            UserWarning,
-            stacklevel=2,
-        )
+        warnings.warn((
+            "Warning: bcrypt.kdf() called with only {0} round(s). "
+            "This few is not secure: the parameter is linear, like PBKDF2.")
+            .format(rounds),
+            UserWarning)
 
     key = _bcrypt.ffi.new("uint8_t[]", desired_key_bytes)
     res = _bcrypt.lib.bcrypt_pbkdf(
@@ -169,6 +138,6 @@ def kdf(
     return _bcrypt.ffi.buffer(key, desired_key_bytes)[:]
 
 
-def _bcrypt_assert(ok: bool) -> None:
+def _bcrypt_assert(ok):
     if not ok:
         raise SystemError("bcrypt assertion failed")
